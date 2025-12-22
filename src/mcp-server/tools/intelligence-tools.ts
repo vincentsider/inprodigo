@@ -63,6 +63,10 @@ export class IntelligenceTools {
               minimum: 1,
               maximum: 50,
               description: 'Maximum number of insights to return'
+            },
+            path: {
+              type: 'string',
+              description: 'Path to the project to search in. If provided, searches the project-specific database.'
             }
           }
         }
@@ -240,44 +244,62 @@ export class IntelligenceTools {
   async getSemanticInsights(args: {
     query?: string;
     conceptType?: string;
-    limit?: number
+    limit?: number;
+    path?: string;
   }): Promise<{
     insights: SemanticInsight[];
     totalAvailable: number;
   }> {
-    const concepts = this.database.getSemanticConcepts();
-    // console.error(`🔍 getSemanticInsights: Retrieved ${concepts.length} concepts from database`);
-    // console.error(`   Query: "${args.query}", ConceptType: ${args.conceptType}`);
+    // Use project-specific database if path is provided
+    let db = this.database;
+    let shouldCloseDb = false;
 
-    const filtered = concepts.filter(concept => {
-      if (args.conceptType && concept.conceptType !== args.conceptType) return false;
-      if (args.query && !concept.conceptName.toLowerCase().includes(args.query.toLowerCase())) return false;
-      return true;
-    });
+    if (args.path) {
+      const projectPath = PathValidator.validateAndWarnProjectPath(args.path, 'get_semantic_insights');
+      const projectDbPath = config.getDatabasePath(projectPath);
+      db = new SQLiteDatabase(projectDbPath);
+      shouldCloseDb = true;
+    }
 
-    // console.error(`   Filtered to ${filtered.length} concepts`);
+    try {
+      const concepts = db.getSemanticConcepts();
+      // console.error(`🔍 getSemanticInsights: Retrieved ${concepts.length} concepts from database`);
+      // console.error(`   Query: "${args.query}", ConceptType: ${args.conceptType}`);
 
-    const limit = args.limit || 10;
-    const limited = filtered.slice(0, limit);
+      const filtered = concepts.filter(concept => {
+        if (args.conceptType && concept.conceptType !== args.conceptType) return false;
+        if (args.query && !concept.conceptName.toLowerCase().includes(args.query.toLowerCase())) return false;
+        return true;
+      });
 
-    const insights: SemanticInsight[] = limited.map(concept => ({
-      concept: concept.conceptName,
-      relationships: Object.keys(concept.relationships),
-      usage: {
-        frequency: concept.confidenceScore * 100, // Convert to frequency approximation
-        contexts: [concept.filePath]
-      },
-      evolution: {
-        firstSeen: concept.createdAt,
-        lastModified: concept.updatedAt,
-        changeCount: concept.evolutionHistory?.changes?.length || 0
+      // console.error(`   Filtered to ${filtered.length} concepts`);
+
+      const limit = args.limit || 10;
+      const limited = filtered.slice(0, limit);
+
+      const insights: SemanticInsight[] = limited.map(concept => ({
+        concept: concept.conceptName,
+        relationships: Object.keys(concept.relationships),
+        usage: {
+          frequency: concept.confidenceScore * 100, // Convert to frequency approximation
+          contexts: [concept.filePath]
+        },
+        evolution: {
+          firstSeen: concept.createdAt,
+          lastModified: concept.updatedAt,
+          changeCount: concept.evolutionHistory?.changes?.length || 0
+        }
+      }));
+
+      return {
+        insights,
+        totalAvailable: filtered.length
+      };
+    } finally {
+      if (shouldCloseDb) {
+        db.close();
       }
-    }));
-
-    return {
-      insights,
-      totalAvailable: filtered.length
-    };
+    }
   }
 
   async getPatternRecommendations(args: CodingContext & {

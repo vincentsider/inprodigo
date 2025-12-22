@@ -21,7 +21,8 @@ export const LearnCodebaseIntelligenceSchema = z.object({
 export const GetSemanticInsightsSchema = z.object({
   query: z.string().optional(),
   conceptType: z.string().optional(),
-  limit: z.number().int().min(1).max(50).optional().default(10)
+  limit: z.number().int().min(1).max(50).optional().default(10),
+  path: z.string().optional()
 });
 
 export const GetPatternRecommendationsSchema = z.object({
