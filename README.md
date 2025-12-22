@@ -171,19 +171,53 @@ get_project_blueprint(
 
 ### Example: Searching Pega Rules
 
-```bash
-# Find all approval-related rules
-get_semantic_insights(query="approval", path="...")
-# Returns: emailapproval, approvalstatus, approvalrejection_flow, etc.
+Just talk naturally to Claude Code:
 
-# Find all workflows
-get_semantic_insights(conceptType="workflow", path="...")
-# Returns: creditbusinessanalysis_flow, initiateapplication_flow, etc.
-
-# Get full feature map
-get_project_blueprint(path="...", includeFeatureMap=true)
-# Returns: 46 flows with their dependencies
 ```
+You: "Find all approval-related rules in my Pega app"
+
+Claude: "I found 43 approval-related concepts including:
+         - approvalrejection_flow_2 (workflow)
+         - emailapproval-9 (correspondence)
+         - approvalstatus (property)
+         ..."
+
+You: "What workflows handle credit proposals?"
+
+Claude: "Based on the feature map, I found these credit-related workflows:
+         - createcreditproposal (18 dependencies)
+         - creditbusinessanalysis_flow (25 dependencies)
+         - creditriskanalysis_flow (20 dependencies)
+         ..."
+```
+
+Claude automatically uses the In-Memoria MCP tools behind the scenes.
+
+### What About the XML Files?
+
+The ingestion script reads **JSONL manifests** (pre-processed by Prodigo), not the raw XMLs:
+
+```
+prodigo-output/
+├── xml/AppName::Version/        ← Raw Pega XMLs (NOT read by ingestion)
+│   └── Rule-Obj-Flow/...            Contains full rule definitions
+├── manifests/AppName::Version/  ← JSONL metadata (READ by ingestion)
+│   ├── rules.jsonl                  Rule names, types, references
+│   └── in-memoria.db                Populated by our script
+└── graph/AppName::Version/      ← Dependency data (READ by ingestion)
+    └── edges.jsonl                  Rule-to-rule relationships
+```
+
+**When are XMLs needed?**
+- Searching/finding rules → No (JSONL has metadata)
+- Understanding dependencies → No (JSONL has relationships)
+- **Implementing new features** → Yes (XMLs have full rule logic)
+- **Generating new rules** → Yes (need XML format)
+
+When you ask Claude to help implement a Pega feature, it will:
+1. Search via In-Memoria (fast, uses database)
+2. Read relevant XMLs (for actual rule content)
+3. Generate new/modified XMLs (for implementation)
 
 ### Key Differences from Standard In-Memoria
 
