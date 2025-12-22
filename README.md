@@ -115,6 +115,85 @@ npx in-memoria learn ./my-project
 npx in-memoria server
 ```
 
+## Prodigo / Pega Support
+
+This fork adds support for **Prodigo output** - processed Pega application exports. Since Pega rules are XML-based (not traditional code), In-Memoria's tree-sitter parsing doesn't work directly. Instead, we provide an ingestion script that populates In-Memoria's database from Prodigo's pre-processed JSONL manifests.
+
+### What the Ingestion Script Does
+
+The script (`scripts/ingest-prodigo-to-inmemoria.py`) reads Prodigo output and populates In-Memoria's SQLite database:
+
+| Prodigo Source | In-Memoria Table | What It Contains |
+|----------------|------------------|------------------|
+| `rules.jsonl` | `semantic_concepts` | All 897 Pega rules as searchable concepts |
+| `edges.jsonl` | `feature_map` | Flows mapped to their dependencies |
+| `nodes.jsonl` | `entry_points` | Portals and main flows as entry points |
+| `pipeline-summary.json` | `project_metadata` | Application info and tech stack |
+
+### Setup for Pega Projects
+
+**1. Run the ingestion script on your Prodigo output:**
+
+```bash
+# Navigate to your project containing Prodigo output
+cd your-project
+
+# Run the ingestion script (adjust paths as needed)
+python scripts/ingest-prodigo-to-inmemoria.py
+```
+
+The script expects this structure:
+```
+prodigo-output/
+├── manifests/AppName::Version/
+│   ├── rules.jsonl          # Parsed rule metadata
+│   ├── in-memoria.db        # Database will be populated here
+│   └── pipeline-summary.json
+└── graph/AppName::Version/
+    ├── edges.jsonl           # Rule dependencies
+    └── nodes.jsonl           # Graph nodes
+```
+
+**2. Query your Pega application:**
+
+```python
+# In Claude Code or any MCP client
+get_semantic_insights(
+    query="approval",
+    path="/path/to/prodigo-output/manifests/AppName::Version"
+)
+
+# Get project blueprint with all flows
+get_project_blueprint(
+    path="/path/to/prodigo-output/manifests/AppName::Version"
+)
+```
+
+### Example: Searching Pega Rules
+
+```bash
+# Find all approval-related rules
+get_semantic_insights(query="approval", path="...")
+# Returns: emailapproval, approvalstatus, approvalrejection_flow, etc.
+
+# Find all workflows
+get_semantic_insights(conceptType="workflow", path="...")
+# Returns: creditbusinessanalysis_flow, initiateapplication_flow, etc.
+
+# Get full feature map
+get_project_blueprint(path="...", includeFeatureMap=true)
+# Returns: 46 flows with their dependencies
+```
+
+### Key Differences from Standard In-Memoria
+
+| Feature | Standard | With Prodigo |
+|---------|----------|--------------|
+| Learning | `auto_learn_if_needed` parses code | Run ingestion script manually |
+| File types | JS, TS, Python, etc. | XML rules via JSONL manifests |
+| Concepts | Functions, classes, variables | Pega rules (flows, properties, sections) |
+| Path parameter | Optional | Required (points to manifest directory) |
+
 ## How It Works
 
 In Memoria is built on Rust + TypeScript, using the Model Context Protocol to connect AI tools to persistent codebase intelligence.
