@@ -102,7 +102,24 @@ npx in-memoria --help
 claude mcp add in-memoria -- npx in-memoria server
 ```
 
-**GitHub Copilot** - See [Copilot Integration](#github-copilot-integration) section below
+**GitHub Copilot (VS Code)** - Add to your VS Code `settings.json`:
+
+```json
+{
+  "github.copilot.chat.experimental.mcpServers": {
+    "in-memoria": {
+      "command": "npx",
+      "args": ["github:vincentsider/inprodigo", "server"]
+    }
+  }
+}
+```
+
+Then restart VS Code and use Copilot Chat (`Cmd+Shift+I`).
+
+> **Note**: MCP support in Copilot is experimental. Requires latest VS Code and Copilot extension.
+
+See [Copilot Integration](#github-copilot-integration) section below for chat modes
 
 ### Learn Your Codebase
 
