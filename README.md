@@ -253,7 +253,7 @@ npm run build      # Full build (requires Rust 1.70+)
 
 ## Credits
 
-This is a fork of [In-Memoria](https://github.com/pi22by7/In-Memoria) by [@pi22by7](https://github.com/pi22by7).
+This is a fork of [In-Memoria](https://github.com/pi22by7/In-Memoria)
 
 **Changes in this fork:**
 - Added `path` parameter to `get_semantic_insights` for project-specific databases
@@ -268,4 +268,4 @@ MIT - see [LICENSE](LICENSE)
 
 **Try it**: `npx github:vincentsider/inprodigo server`
 
-_In memoria: in memory. Because your AI assistant should remember._
+_Because your AI assistant should remember._
