@@ -1,8 +1,6 @@
-# InProdigo (In-Memoria for Pega/Prodigo)
+# InProdigo (Nemory for Pega/Prodigo)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
-**Fork of [In-Memoria](https://github.com/pi22by7/In-Memoria) with Prodigo/Pega support.**
 
 Gives AI coding assistants persistent memory for Pega applications processed by Prodigo.
 
