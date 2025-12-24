@@ -60,11 +60,11 @@ Then restart VS Code and use Copilot Chat (`Cmd+Shift+I`).
 
 ## Prodigo / Pega Support
 
-This project adds memory support for **Prodigo output** - processed Pega application exports. Since Pega rules are XML-based (not traditional code), In-Memoria's tree-sitter parsing doesn't work directly. Instead, we provide an ingestion script that populates In-Memoria's database from Prodigo's pre-processed JSONL manifests.
+This project adds memory support for **Prodigo output** - processed Pega application exports. Since Pega rules are XML-based (not traditional code), we provide an ingestion script that populates the memory database from Prodigo's pre-processed JSONL manifests.
 
 ### What the Ingestion Script Does
 
-The script (`scripts/ingest-prodigo-to-inmemoria.py`) reads Prodigo output and populates In-Memoria's SQLite database:
+The script (`scripts/ingest-prodigo-to-inmemoria.py`) reads Prodigo output and populates the SQLite database:
 
 | Prodigo Source | In-Memoria Table | What It Contains |
 |----------------|------------------|------------------|
